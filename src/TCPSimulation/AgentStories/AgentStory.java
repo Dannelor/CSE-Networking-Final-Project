@@ -75,21 +75,23 @@ public class AgentStory extends Agent {
     }
 
     protected void handleIncomingStoryPacket(Packet incoming) {
-        System.out.println("Received incoming story packet");
-        System.out.println(new String(incoming.getData()));
-
         // Send response ack to the sending router
         Packet p = new Packet(incoming.destination,incoming.source,0,incoming.sequenceno + 1);
             p.ACK = true;
 
         sendPacket(p);
+
+        receiveAgentStoryPacket(incoming);
     }
+
+    protected void receiveAgentStoryPacket(Packet incoming){}
 
     void nextStoryPacket(Packet received){
         System.out.println(received.getData());
     }
 
     void sendStoryPacket(Packet send){
+
         // We are already trying to send a packet
         if(tasks.get(send.destination) != null)
             return;

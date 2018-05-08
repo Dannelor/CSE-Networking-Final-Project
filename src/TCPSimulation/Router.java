@@ -35,13 +35,21 @@ public class Router {
         // Accept connections from other routers
         ServerSocket serverSocket = new ServerSocket(router.getPort());
         new Thread(() ->{
-            while(true) {
+            Socket s = null;
+            while(!Thread.currentThread().isInterrupted()) {
                 try {
                     // Accept any incoming connections from outside routers
-                    Socket s = serverSocket.accept();
+                    s = serverSocket.accept();
 
                     // Create a new thread for router inputs
                     routerInputs.add(RouterConnection.newInputThread(this, s));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(s != null) {
+                try {
+                    s.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -57,6 +65,10 @@ public class Router {
 
     void receive(Packet p){
         System.out.println("Received packet");
+
+        if(p == null)
+            return;
+
         if(p.DRP)
             return;
 

@@ -22,7 +22,21 @@ public class Agent extends Router {
     // Validates all information about the packet
     @Override
     void receive(Packet p){
-        // Do validation
+        p.verifyChecksum();
+        // Agent has been forcibly removed from connection
+        if(p.RST && p.TER) {
+            System.out.println("TERMINATED");
+            connections.forEach((l,r) -> {
+                try {
+                    r.close();
+                    routerInputs.forEach(t -> t.interrupt());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            System.exit(0);
+        }
+
         receiveStoryPacket(p);
     }
 

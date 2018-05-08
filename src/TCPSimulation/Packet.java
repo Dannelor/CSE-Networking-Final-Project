@@ -7,7 +7,7 @@ public class Packet implements Serializable {
     public int source = -1;
     public int destination = -1;
     int receiverwindow = -1;
-    int checksum = -1;
+    long checksum = -1;
     private int urgdatapointer = -1;
 
     // 32-bit ints
@@ -25,7 +25,7 @@ public class Packet implements Serializable {
     public boolean RST = false;
     public boolean SYN = false;
     public boolean FIN = false;
-    private boolean URG;
+    public boolean URG = false;
 
     // Data
     private byte [] data;
@@ -40,7 +40,7 @@ public class Packet implements Serializable {
 
     // -------------------------------- Set Getters and Setters -------------------------------- //
     // --- Getters
-    public int getChecksum() {
+    public long getChecksum() {
         return this.checksum;
     }
 
@@ -49,6 +49,7 @@ public class Packet implements Serializable {
     }
 
     void setData(byte [] data) {
+        this.checksum = calculateChecksum(data);
         this.data = data;
     }
 
@@ -60,8 +61,22 @@ public class Packet implements Serializable {
         setData(data.getBytes());
     }
 
-    void setUrgent(int urgdatapointer){
-        URG = true;
-        this.urgdatapointer = urgdatapointer;
+    public long calculateChecksum(byte [] data){
+        int i = 0;
+        long sum = 0;
+        int length = data.length;
+        while (length > 0) {
+            sum += (data[i++]&0xff) << 8;
+            if ((--length)==0) break;
+            sum += (data[i++]&0xff);
+            --length;
+        }
+
+        return (~((sum & 0xFFFF)+(sum >> 16)))&0xFFFF;
+    }
+
+    public boolean verifyChecksum(){
+
+        return checksum == -1 ? true : checksum == calculateChecksum(data);
     }
 }

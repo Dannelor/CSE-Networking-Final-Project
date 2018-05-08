@@ -2,10 +2,12 @@ package TCPSimulation;
 
 import TCPSimulation.Functional.RouterInfo;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /*
@@ -18,6 +20,7 @@ public class RouterConnection {
 
     // Object Streams for connection
     ObjectOutputStream output;
+    ObjectInputStream input;
 
     // Any packets traveling between routers must be buffered to prevent corruption
     LinkedBlockingDeque<Packet> packetBuffer = new LinkedBlockingDeque<>();
@@ -32,7 +35,11 @@ public class RouterConnection {
             while(true) {
                 try {
                     // take will block until there is a new packet to send
-                    output.writeObject(packetBuffer.take());
+                    try{
+                        output.writeObject(packetBuffer.take());
+                    }catch(SocketException e){
+                        return;
+                    }
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -50,7 +57,13 @@ public class RouterConnection {
         Thread inputThread = new Thread(() -> {
             while (true){
                 try {
-                    r.receive((Packet) input.readObject());
+                    Packet p = null;
+                    try{
+                        p = (Packet) input.readObject();
+                    }catch(EOFException e){
+                        input.close();
+                    }
+                    r.receive(p);
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
