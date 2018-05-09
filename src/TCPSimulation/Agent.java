@@ -1,3 +1,8 @@
+/* 
+Mason Beckham 1001073976
+Minh-Quan Nguyen 1001032212
+*/
+
 package TCPSimulation;
 
 import TCPSimulation.Functional.RouterInfo;
@@ -8,10 +13,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
-/**
- * Created by Dannelor on 5/7/2018.
- */
 public class Agent extends Router {
 
     public Agent(RouterInfo router, HashMap<String, RouterInfo> world) throws IOException {

@@ -1,3 +1,8 @@
+/* 
+Mason Beckham 1001073976
+Minh-Quan Nguyen 1001032212
+*/
+
 package TCPSimulation;
 
 import java.io.Serializable;
