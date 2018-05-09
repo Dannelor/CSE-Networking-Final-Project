@@ -21,7 +21,7 @@ public class Agent extends Router {
     // Agents behave differently when receiving new packets
     // Validates all information about the packet
     @Override
-    void receive(Packet p){
+    protected void receive(Packet p){
         p.verifyChecksum();
         // Agent has been forcibly removed from connection
         if(p.RST && p.TER) {

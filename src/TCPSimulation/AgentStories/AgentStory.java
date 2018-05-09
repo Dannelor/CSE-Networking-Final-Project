@@ -16,6 +16,8 @@ public class AgentStory extends Agent {
     // Store the current SEQ# for each connection
     HashMap<Integer,Integer> seqNO = new HashMap<>();
 
+    boolean Mission3Started = false;
+
     public AgentStory(RouterInfo router, HashMap<String, RouterInfo> world,List<RouterInfo> agents) throws IOException {
         super(router, world);
         handshake(agents);
@@ -37,13 +39,9 @@ public class AgentStory extends Agent {
                 task.cancel();
                 timer.purge();
 
-                // Finish handshake and start story
-                Packet returnHandshake = new Packet(router.getNumberID(), p.source, 0, 0);
-                    returnHandshake.ACK = true;
+                seqNO.put(p.source,p.sequenceno);
 
-                    seqNO.put(p.source,p.sequenceno);
-
-                    sendPacket(returnHandshake);
+                nextStoryPacket(p);
                 return;
             }else{ // Reply to another handshake request
                 System.out.println("Received handshake request from " + p.source);
@@ -57,22 +55,33 @@ public class AgentStory extends Agent {
         }
 
         if(p.ACK){
+
+            System.out.println(this.Mission3Started);
+            if(Mission3Started){
+                HandleMission3Message(p);
+                return;
+            }
+
             seqNO.putIfAbsent(p.source,p.acknowledgementno);
 
             System.out.println("Received ACK " + seqNO.get(p.source).intValue() + " : " + p.acknowledgementno);
+
+            if( p.acknowledgementno != seqNO.get(p.source).intValue())
+                return;
 
             if(tasks.containsKey(p.source)) {
                 tasks.get(p.source).cancel();
                 tasks.put(p.source, null);
             }
 
-            timer.purge();
             nextStoryPacket(p);
             return;
         }
 
         handleIncomingStoryPacket(p);
     }
+
+    protected void HandleMission3Message(Packet p){}
 
     protected void handleIncomingStoryPacket(Packet incoming) {
         // Send response ack to the sending router

@@ -14,6 +14,7 @@ public class AgentAnnStory extends AgentStory {
 
     HashMap<Integer,List<String>> data;
     HashMap<Integer,BufferedWriter> writers = new HashMap<>();
+
     public AgentAnnStory(RouterInfo router, HashMap<String, RouterInfo> world, List<RouterInfo> agents, HashMap<Integer, List<String>> data) throws IOException {
         super(router, world, agents);
         // Create a file writer for each agent
@@ -28,84 +29,102 @@ public class AgentAnnStory extends AgentStory {
     }
 
     boolean communicateWithJanURG = false;
-    boolean shutDownChan = true;
+
+    boolean janFinishedSending = false;
+    boolean finishedSendingToJan = false;
 
     @Override
     void nextStoryPacket(Packet received){
         System.out.println("Received data from " + received.source);
 
+        if(Mission3Started)
+            HandleMission3Message(received);
+
         // put returns the previous value so increment by one
         int curSeqNO = seqNO.put(received.source,seqNO.get(received.source) + 1);
 
-        if(curSeqNO >= data.get(received.source).size()) {
-            // Shutdown Agent chan
-            if(shutDownChan && received.source == 1) {
-                System.out.println("Terminating CHAN");
-                Packet out = new Packet(router.getNumberID(), 1, curSeqNO, 0);
-                    out.RST = true;
-                    out.TER = true;
+        if(finishedSendingToJan && janFinishedSending){
+            this.Mission3Started = true;
+        }
 
-                sendPacket(out);
-
-                shutDownChan = false;
-                return;
-            }
-            Mission3Receive(received);
+        if(curSeqNO >= data.get(received.source).size())
             return;
-        }
-
-        if(curSeqNO == 5 && received.source == 1){
-            communicateWithJanURG = true;
-        }
 
         Packet out = new Packet(router.getNumberID(), received.source, curSeqNO, 0);
             out.setData(data.get(received.source).get(curSeqNO));
-            if(communicateWithJanURG && received.destination == 100)
+            if(communicateWithJanURG && received.destination == 100) {
                 out.URG = true;
+                communicateWithJanURG = false;
+            }
+            if(curSeqNO == data.get(received.source).size() - 1) {
+                finishedSendingToJan = true;
+                out.FIN = true;
+            }
 
+            System.out.println("TEST");
         sendStoryPacket(out);
     }
 
-    int missionstep = 0;
-    private void Mission3Receive(Packet received) {
-        int curSeqNO = seqNO.put(received.source,seqNO.get(received.source) + 1);
+
+    @Override
+    protected void HandleMission3Message(Packet incoming) {
+        int sequence = incoming.sequenceno;
 
         Packet out = null;
-        switch(missionstep) {
+        switch(sequence){
             case 0:
-                out = new Packet(router.getNumberID(), 100, curSeqNO, 0);
-                    out.setData("Execute.PEPPER THE PEPPER");
-                    out.URG = true;
-                missionstep++;
-                break;
-            case 1:
-                out = new Packet(router.getNumberID(), 100, curSeqNO, 0);
-                out.setData("(32.76”N, -97.07” W )");
-                out.URG = true;
-                missionstep++;
-                break;
-            case 2:
-                out = new Packet(router.getNumberID(), 100, curSeqNO, 0);
-                    out.FIN = true;
+                out = new Packet(router.getNumberID(),incoming.source,sequence,sequence);
                     out.ACK = true;
+                    out.setData("Execute.PEPPER THE PEPPER");
+            case 2:
+                out = new Packet(router.getNumberID(),incoming.source,sequence + 1,sequence + 1);
+                    out.ACK = true;
+                    out.setData("(32.76”N, -97.07” W )");
+            case 3:
+                out = new Packet(router.getNumberID(),incoming.source,sequence + 1,sequence + 1);
+                    out.ACK = true;
+                    out.FIN = true;
         }
 
         if(out == null)
             return;
 
         sendStoryPacket(out);
-        if(missionstep == 2) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+        if(out.FIN && out.ACK)
             System.exit(0);
-        }
     }
 
     @Override
     protected void receiveAgentStoryPacket(Packet incoming){
+
+        if(this.Mission3Started) {
+            HandleMission3Message(incoming);
+            return;
+        }
+
+        // Stop communication with chan
+        // We are actively shutting them down, we are talking to them, and they have finished talking
+        if(incoming.source == 1 && incoming.FIN) {
+            System.out.println("Terminating CHAN");
+            Packet out = new Packet(router.getNumberID(), 1, 0, 0);
+            out.RST = true;
+            out.TER = true;
+
+            sendPacket(out);
+
+            return;
+        }
+
+        if(incoming.FIN && incoming.source == 100){
+            janFinishedSending = true;
+            if(finishedSendingToJan){
+                this.Mission3Started = true;
+            }
+        }
+
+        System.out.println("Received packet from " + incoming.source);
+
         if(incoming.getData() != null) {
             try {
                 BufferedWriter writer = writers.get(incoming.source);

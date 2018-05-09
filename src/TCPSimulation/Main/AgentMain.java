@@ -3,6 +3,7 @@ package TCPSimulation.Main;
 import TCPSimulation.AgentStories.AgentAnnStory;
 import TCPSimulation.AgentStories.AgentChanStory;
 import TCPSimulation.AgentStories.AgentJanStory;
+import TCPSimulation.AgentStories.HeadquartersStory;
 import TCPSimulation.Functional.RouterInfo;
 import TCPSimulation.Utility.WorldReader;
 
@@ -37,6 +38,9 @@ public class AgentMain {
             case "Chan":
                 agents = world.values().stream().filter(info -> info.getStringID() .equals("Jan") || info.getStringID() .equals("Ann")).collect(Collectors.toList());
                 new AgentChanStory(world.get("Chan"),world,agents,getData("Chan",agents));
+                break;
+            case "H":
+                new HeadquartersStory(world.get("H"),world);
                 break;
             default:
                 System.out.println("No agent was found with the ID: " + args[0]);

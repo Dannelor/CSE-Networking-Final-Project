@@ -78,7 +78,7 @@ public class RouterConnection {
         output = new ObjectOutputStream(s.getOutputStream());
     }
 
-    void send(Packet p){
+    public void send(Packet p){
         packetBuffer.add(p);
     }
 

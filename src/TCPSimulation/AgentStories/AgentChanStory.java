@@ -39,7 +39,8 @@ public class AgentChanStory extends AgentStory{
 
         Packet out = new Packet(router.getNumberID(),received.source,curSeqNO,0);
         out.setData(data.get(received.source).get(curSeqNO));
-
+        if(curSeqNO == data.get(received.source).size() - 1)
+            out.FIN = true;
         sendStoryPacket(out);
     }
 

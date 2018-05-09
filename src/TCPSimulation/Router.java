@@ -63,11 +63,11 @@ public class Router {
         executorService.shutdown();
     }
 
-    void receive(Packet p){
-        System.out.println("Received packet");
-
+    protected void receive(Packet p){
         if(p == null)
             return;
+
+        System.out.println("Received packet from: " + p.source + " : " + p.destination + " : "+ p.sequenceno + " : " + p.ACK);
 
         if(p.DRP)
             return;

@@ -6,8 +6,8 @@ start "E" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.Ro
 start "F" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.RouterMain F
 start "G" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.RouterMain G
 start "L" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.RouterMain L
-start "H" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.RouterMain H
 
+start "H" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.AgentMain H
 start "Ann" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.AgentMain Ann
 start "Jan" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.AgentMain Jan
 start "Chan" cmd /k java -classpath out\production\Project3.2 TCPSimulation.Main.AgentMain Chan
