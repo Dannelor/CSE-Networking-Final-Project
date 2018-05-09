@@ -61,7 +61,6 @@ public class AgentStory extends Agent {
 
         if(p.ACK){
 
-            System.out.println(this.Mission3Started);
             if(Mission3Started){
                 HandleMission3Message(p);
                 return;

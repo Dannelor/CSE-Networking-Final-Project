@@ -65,10 +65,10 @@ public class RouterConnection {
                     Packet p = null;
                     try{
                         p = (Packet) input.readObject();
-                    }catch(EOFException e){
+                        r.receive(p);
+                    }catch(EOFException | SocketException e){
                         input.close();
                     }
-                    r.receive(p);
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }

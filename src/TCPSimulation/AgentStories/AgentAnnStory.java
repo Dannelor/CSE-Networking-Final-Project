@@ -66,35 +66,42 @@ public class AgentAnnStory extends AgentStory {
                 out.FIN = true;
             }
 
-            System.out.println("TEST");
         sendStoryPacket(out);
     }
 
 
     @Override
     protected void HandleMission3Message(Packet incoming) {
-        int sequence = incoming.sequenceno;
+        if(!incoming.URG)
+            return;
 
+        if(incoming.getData() != null)
+            System.out.println(new String(incoming.getData()));
+
+        int sequence = incoming.sequenceno;
         Packet out = null;
         switch(sequence){
             case 0:
-                out = new Packet(router.getNumberID(),incoming.source,sequence,sequence);
+                out = new Packet(router.getNumberID(),incoming.source,sequence + 1,sequence + 1);
                     out.ACK = true;
                     out.setData("Execute.PEPPER THE PEPPER");
-            case 2:
+                    break;
+            case 4:
                 out = new Packet(router.getNumberID(),incoming.source,sequence + 1,sequence + 1);
                     out.ACK = true;
                     out.setData("(32.76”N, -97.07” W )");
-            case 3:
+                    break;
+            case 6:
                 out = new Packet(router.getNumberID(),incoming.source,sequence + 1,sequence + 1);
                     out.ACK = true;
                     out.FIN = true;
+                    break;
         }
 
         if(out == null)
             return;
 
-        sendStoryPacket(out);
+        sendPacket(out);
 
         if(out.FIN && out.ACK)
             System.exit(0);

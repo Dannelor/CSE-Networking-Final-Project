@@ -8,10 +8,8 @@ package TCPSimulation.AgentStories;
 import TCPSimulation.Functional.RouterInfo;
 import TCPSimulation.Packet;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 
@@ -74,29 +72,45 @@ public class AgentJanStory extends AgentStory{
     protected void HandleMission3Message(Packet p){
         int sequence = p.sequenceno;
 
+        if(p.getData() != null)
+            System.out.println(new String(p.getData()));
+
         Packet out = null;
         switch(sequence){
-            case 0:
-                out = new Packet(router.getNumberID(),2,p.sequenceno,p.sequenceno);
-                    out.setData("(32° 43’ 22.77” N,97° 9’ 7.53” W ). Please eliminate target. PEPPER THE PEPPER");
-                    out.URG = true;
-
             case 1:
-                out = new Packet(router.getNumberID(),111,p.sequenceno + 1,p.sequenceno + 1);
+                try {
+                    Socket H = new Socket("localhost",6000);
+                        ObjectOutputStream HOut = new ObjectOutputStream(H.getOutputStream());
+                        ObjectInputStream HIn = new ObjectInputStream(H.getInputStream());
+
+                    out = new Packet(router.getNumberID(),2,sequence + 1,sequence + 1);
+                        out.setData("(32° 43’ 22.77” N,97° 9’ 7.53” W ). Please eliminate target. PEPPER THE PEPPER");
+
+                        HOut.writeObject(out);
+                        HandleMission3Message((Packet) HIn.readObject());
+                        return;
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            case 3:
+                out = new Packet(router.getNumberID(),111,sequence + 1,sequence + 1);
                     out.setData("CONGRATULATIONS WE FRIED DRY GREEN LEAVE");
                     out.URG = true;
                     out.ACK = true;
-            case 3:
-                out = new Packet(router.getNumberID(),111,p.sequenceno + 1,p.sequenceno + 1);
+                    break;
+            case 5:
+                out = new Packet(router.getNumberID(),111,sequence + 1,sequence + 1);
                     out.FIN = true;
-            case 4:
+                    out.URG = true;
+                    break;
+            case 7:
                 System.exit(0);
         }
 
         if(out == null)
             return;
 
-        sendStoryPacket(out);
+        sendPacket(out);
     }
     
     @Override

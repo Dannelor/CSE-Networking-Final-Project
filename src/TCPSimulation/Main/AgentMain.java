@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class AgentMain {
 
-    public static void main(String [] args) throws IOException {
+    public static void main(String [] args) throws IOException, ClassNotFoundException, InterruptedException {
 
         if(args.length == 0){
             System.out.println("Please specify the agent");
@@ -45,7 +45,7 @@ public class AgentMain {
                 new AgentChanStory(world.get("Chan"),world,agents,getData("Chan",agents));
                 break;
             case "H":
-                new HeadquartersStory(world.get("H"),world);
+                new HeadquartersStory();
                 break;
             default:
                 System.out.println("No agent was found with the ID: " + args[0]);
